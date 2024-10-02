@@ -18,6 +18,7 @@ class OrdersView(APIView):
     @extend_schema(
         request=None,
         responses={status.HTTP_200_OK: get_serializer_class},
+        summary="Get all user orders."
     )
     def get(self, request):
         order_service = OrderService()
@@ -28,6 +29,7 @@ class OrdersView(APIView):
     @extend_schema(
         request=None,
         responses={"201": create_order_out_serializer},
+        summary="Create a new order."
     )
     def post(self, request):
         order_service = OrderService()
@@ -45,6 +47,7 @@ class OrderDetailView(APIView):
     @extend_schema(
         request=None,
         responses={status.HTTP_200_OK: get_serializer_class},
+        summary="Get order details."
     )
     def get(self, request, pk):
         order_service = OrderService(pk)
@@ -55,6 +58,7 @@ class OrderDetailView(APIView):
 
 @extend_schema(
     tags=["orders"],
+    summary="Cancel an order."
 )
 class OrderCancelView(APIView):
     permission_classes = [IsAuthenticated]

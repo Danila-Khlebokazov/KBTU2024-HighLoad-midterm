@@ -114,7 +114,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "exceptions.core_exception_handler",
     "COERCE_DECIMAL_TO_STRING": False,
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": 20,
     'NON_FIELD_ERRORS_KEY': 'error',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'apps.authentication.backends.JWTAuthentication',

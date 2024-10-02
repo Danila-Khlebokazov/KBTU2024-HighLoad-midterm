@@ -18,7 +18,7 @@ class RegistrationAPIView(APIView):
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
 
-    @extend_schema(request=serializer_class, responses=UserSerializer)
+    @extend_schema(request=serializer_class, responses=UserSerializer, summary="Register a new user.")
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -35,7 +35,7 @@ class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
     serializer_class = LoginSerializer
 
-    @extend_schema(request=serializer_class, responses=UserSerializer)
+    @extend_schema(request=serializer_class, responses=UserSerializer, summary="Login an existing user.")
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -43,7 +43,7 @@ class LoginAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["auth"], summary="Retrieve and update user information.")
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     """
     Retrieve and update user information.

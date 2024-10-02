@@ -1,11 +1,19 @@
-from apps.core.api.views.order_views import (
+from .order_views import (
     OrdersView,
     OrderDetailView,
     OrderCancelView
+)
+from .product_views import (
+    ProductsView
+)
+from .category_views import (
+    CategoriesView
 )
 
 __all__ = [
     "OrdersView",
     "OrderDetailView",
-    "OrderCancelView"
+    "OrderCancelView",
+    "ProductsView",
+    "CategoriesView"
 ]

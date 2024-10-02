@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.core.models import Order, Product
+from apps.core.models import Order, Product, Category, OrderItem
 
 
 def create_serializer_class(name, fields):
@@ -33,8 +33,22 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()
+
+    class Meta:
+        model = OrderItem
+        fields = ("product", "quantity")
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = "__all__"
+
+
 class FullOrderSerializer(serializers.ModelSerializer):
-    items = ProductSerializer(many=True)
+    items = OrderItemSerializer(many=True)
 
     class Meta:
         model = Order
