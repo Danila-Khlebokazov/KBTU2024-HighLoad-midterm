@@ -1,0 +1,117 @@
+version: "3.8"
+
+#x-def-logging: &default-logging
+#  logging:
+#    # Указываем, какой драйвер использовать
+#    driver: "loki"
+#    options:
+#      # Адрес Loki, куда складывать логи
+#      # Обратите внимание, что здесь используется не имя сервиса loki, а локальный хост, на который проброшен порт Loki,
+#      # это сделано потому, что логи будет писать docker engine, котрый расположен на хостовой машине,
+#      # и он не знает имени хоста контейнера Loki, которое ему присвоил compose во внутренней сети проекта.
+#      loki-url: "http://localhost:3100/loki/api/v1/push"
+#      loki-batch-size: "100"
+#      loki-retries: 2
+#      loki-max-backoff: 1000ms
+#      loki-timeout: 1s
+
+services:
+  postgres-master:
+    restart: always
+    container_name: "postgres-master"
+    image: postgres:latest
+    user: postgres
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "midka"
+      TZ: "Almaty/Asia"
+#    <<: *default-logging
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-master-data:/var/lib/postgresql/data
+#      - ./postgresql/master/postgres.conf:/etc/postgresql/postgresql.conf
+#    command: >
+#      bash -c "
+#        echo 'host replication postgres 192.168.224.4/32 md5' >> /var/lib/postgresql/data/pg_hba.conf;
+#        postgres -c config_file=/etc/postgresql/postgresql.conf
+#      "
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost" ]
+#      interval: 10s
+#      timeout: 10s
+#      retries: 20
+
+#  postgres-slave:
+#    restart: always
+#    image: postgres:latest
+#    user: postgres
+#    environment:
+#      POSTGRES_USER: "postgres"
+#      POSTGRES_PASSWORD: "postgres"
+#      TZ: "Almaty/Asia"
+#    volumes:
+#      - postgres-slave-data:/var/lib/postgresql/data
+#      - ./postgresql/slave/postgres.conf:/etc/postgresql/postgresql.conf
+#    depends_on:
+#      - postgres-master
+#    ports:
+#      - "5433:5432"
+#    command: >
+#      bash -c "
+#        until pg_isready --host=postgres-master --port=5432; do
+#          echo 'Waiting for master to start...'
+#          sleep 1;
+#        done;
+#        rm -rf /var/lib/postgresql/data/*;
+#        pg_basebackup -h postgres-master -D /var/lib/postgresql/data -U postgres -vP -W;
+#        chmod -R 0700 /var/lib/postgresql/data;
+#        echo 'host replication all all trust' >> /var/lib/postgresql/data/pg_hba.conf;
+#        postgres -c config_file=/etc/postgresql/postgresql.conf;
+#      "
+
+  redis:
+    restart: always
+    container_name: "redis"
+    image: redis:latest
+    ports:
+      - "6379:6379"
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost" ]
+#      interval: 10s
+#      timeout: 10s
+#      retries: 20
+
+#  grafana:
+#    container_name: "grafana"
+#    restart: unless-stopped
+#    user: "0"
+#    image: grafana/grafana-enterprise
+#    ports:
+#      - "3000:3000"
+#    volumes:
+#      - grafana-data:/var/lib/grafana
+#      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+#    environment:
+#      - TERM=linux
+#      - GF_SERVER_ROOT_URL=http://my.grafana.server/
+#      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
+#      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+#      - TZ=Asia/Almaty
+#
+#  loki:
+#    hostname: loki
+#    image: grafana/loki:latest
+#    environment:
+#      TZ: "Almaty/Asia"
+#    ports:
+#      - "3100:3100"
+#    command: -config.file=/etc/loki/retention-config.yaml
+#    volumes:
+#      - ./loki/config.yaml:/etc/loki/retention-config.yaml
+
+volumes:
+  postgres-master-data:
+#  postgres-slave-data:
+#  grafana-data:
