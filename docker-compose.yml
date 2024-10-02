@@ -16,6 +16,24 @@ version: "3.8"
 #      loki-timeout: 1s
 
 services:
+  django: &django
+    restart: always
+    container_name: "django"
+    build:
+      context: ./e-commerce/
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=Asia/Almaty
+    env_file:
+      - ./e-commerce/.env
+    volumes:
+      - static-volume:/app/var/static
+    depends_on:
+      - postgres-master
+      - redis
+
   postgres-master:
     restart: always
     container_name: "postgres-master"
@@ -113,5 +131,6 @@ services:
 
 volumes:
   postgres-master-data:
+  static-volume:
 #  postgres-slave-data:
 #  grafana-data:

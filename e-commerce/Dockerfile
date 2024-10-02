@@ -26,10 +26,18 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
+COPY runners/django-entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+RUN mkdir -p /app/var/static
+
+RUN chown -R appuser:appuser /app
+
 USER appuser
 
 COPY . .
 
 EXPOSE 8000
 
-CMD python manage.py runserver 0.0.0.0:8000
+ENTRYPOINT ["/entrypoint.sh"]

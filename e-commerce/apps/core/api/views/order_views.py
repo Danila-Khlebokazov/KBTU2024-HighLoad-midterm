@@ -47,7 +47,8 @@ class OrderDetailView(APIView):
     @extend_schema(
         request=None,
         responses={status.HTTP_200_OK: get_serializer_class},
-        summary="Get order details."
+        summary="Get order details.",
+        operation_id="api_core_orders_details_retrieve"
     )
     def get(self, request, pk):
         order_service = OrderService(pk)

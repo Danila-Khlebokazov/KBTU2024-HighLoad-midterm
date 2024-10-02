@@ -18,12 +18,13 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from debug_toolbar.toolbar import debug_toolbar_urls
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/core/', include("apps.core.api.urls")),
     path('api/auth/', include('apps.authentication.urls', namespace='authentication')),
-] + debug_toolbar_urls()
+] + debug_toolbar_urls() + staticfiles_urlpatterns()
 
 if settings.DEBUG:
     from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView

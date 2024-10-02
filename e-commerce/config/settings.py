@@ -1,5 +1,3 @@
-DEBUG = True
-
 # CORE -------------------------
 from pathlib import Path
 import environ
@@ -10,9 +8,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(str(BASE_DIR / ".env"))
 
-SECRET_KEY = 'django-insecure-)_%$jslbu14+_*9vc%^jon@qiw4wq1gg8g^8w=^5q6=ouw0o+j'
+DEBUG = env.bool("DEBUG", False)
 
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = env.str("SECRET_KEY", "secret")
+
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
 CSRF_TRUSTED_ORIGINS = ["http://localhost"]
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", False)
 ROOT_URLCONF = 'config.urls'
@@ -78,7 +78,7 @@ INSTALLED_APPS = [
 
 # STATIC AND DATA -------------------------
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = "/app/var/static/"
 
 TEMPLATES = [
     {
@@ -99,13 +99,30 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "midka",
-        "HOST": "localhost",
-        # "HOST": "host.docker.internal",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
+        'NAME': env.str("POSTGRES_DB", "midka"),
+        "HOST": env.str("POSTGRES_HOST", "localhost"),
+        "PORT": env.str("POSTGRES_PORT", "5432"),
+        "USER": env.str("POSTGRES_USER"),
+        "PASSWORD": env.str("POSTGRES_PASSWORD"),
     }
 }
+
+# CACHE AND SESSION
+# -----------------------------------------------------------------------------
+CACHES = {
+    # "default": {
+    #     "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    #     "LOCATION": "unique"
+    # },
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/var/tmp/django_session_cache',
+
+  },
+}
+
+SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_AGE = 1209600
 
 # REST FRAMEWORK
 # -----------------------------------------------------------------------------
