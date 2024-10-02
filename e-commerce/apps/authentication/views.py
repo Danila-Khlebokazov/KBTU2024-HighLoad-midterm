@@ -1,11 +1,10 @@
-from rest_framework import status, serializers
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from drf_spectacular.utils import extend_schema
 
-from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
 )
@@ -14,16 +13,13 @@ from .serializers import (
 @extend_schema(tags=["auth"])
 class RegistrationAPIView(APIView):
     """
-    Разрешить всем пользователям (аутентифицированным и нет) доступ к данному эндпоинту.
+    Register a new user.
     """
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
-    renderer_classes = (UserJSONRenderer,)
 
     @extend_schema(request=serializer_class, responses=UserSerializer)
     def post(self, request):
-        # Паттерн создания сериализатора, валидации и сохранения - довольно
-        # стандартный, и его можно часто увидеть в реальных проектах.
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -31,42 +27,40 @@ class RegistrationAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(tags=["auth"])
 class LoginAPIView(APIView):
+    """
+        Login an existing user.
+    """
     permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
+    @extend_schema(request=serializer_class, responses=UserSerializer)
     def post(self, request):
-        user = request.data.get('user', {})
-
-        # Обратите внимание, что мы не вызываем метод save() сериализатора, как
-        # делали это для регистрации. Дело в том, что в данном случае нам
-        # нечего сохранять. Вместо этого, метод validate() делает все нужное.
-        serializer = self.serializer_class(data=user)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=["auth"])
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    """
+    Retrieve and update user information.
+    """
     permission_classes = (IsAuthenticated,)
-    renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
+    @extend_schema(request=serializer_class, responses=UserSerializer)
     def retrieve(self, request, *args, **kwargs):
-        # Здесь нечего валидировать или сохранять. Мы просто хотим, чтобы
-        # сериализатор обрабатывал преобразования объекта User во что-то, что
-        # можно привести к json и вернуть клиенту.
         serializer = self.serializer_class(request.user)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(request=serializer_class, responses=UserSerializer)
     def update(self, request, *args, **kwargs):
-        serializer_data = request.data.get('user', {})
-
-        # Паттерн сериализации, валидирования и сохранения - то, о чем говорили
         serializer = self.serializer_class(
-            request.user, data=serializer_data, partial=True
+            request.user, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()

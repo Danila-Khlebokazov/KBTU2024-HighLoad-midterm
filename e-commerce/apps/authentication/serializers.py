@@ -22,6 +22,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    """ Serialization of user login. """
     email = serializers.CharField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
@@ -55,11 +56,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """ Ощуществляет сериализацию и десериализацию объектов User. """
-
-    # Пароль должен содержать от 8 до 128 символов. Это стандартное правило. Мы
-    # могли бы переопределить это по-своему, но это создаст лишнюю работу для
-    # нас, не добавляя реальных преимуществ, потому оставим все как есть.
+    """ User object serialization. """
     password = serializers.CharField(
         max_length=128,
         min_length=8,
@@ -72,26 +69,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('email', 'username', 'password', 'token',)
 
     def update(self, instance, validated_data):
-        """ Выполняет обновление User. """
-
-        # В отличие от других полей, пароли не следует обрабатывать с помощью
-        # setattr. Django предоставляет функцию, которая обрабатывает пароли
-        # хешированием и 'солением'. Это означает, что нам нужно удалить поле
-        # пароля из словаря 'validated_data' перед его использованием далее.
         password = validated_data.pop('password', None)
-
         for key, value in validated_data.items():
-            # Для ключей, оставшихся в validated_data мы устанавливаем значения
-            # в текущий экземпляр User по одному.
             setattr(instance, key, value)
 
         if password is not None:
-            # 'set_password()' решает все вопросы, связанные с безопасностью
-            # при обновлении пароля, потому нам не нужно беспокоиться об этом.
             instance.set_password(password)
-
-        # После того, как все было обновлено, мы должны сохранить наш экземпляр
-        # User. Стоит отметить, что set_password() не сохраняет модель.
         instance.save()
-
         return instance

@@ -2,6 +2,7 @@ from typing import Optional, overload, Callable, Union, List
 
 from django.contrib.auth.models import User
 from multipledispatch import dispatch
+from django.shortcuts import get_object_or_404
 
 from constants import CANNOT_ADD_PRODUCT, CANNOT_REMOVE_PRODUCT, WRONG_SEQUENCE, EMPTY_ORDER
 from apps.core.models import Order, OrderItem
@@ -9,24 +10,30 @@ from exceptions import ServiceException
 
 
 class OrderService:
+    order_objects = Order.objects
+    order_item_objects = OrderItem.objects
+
     def __init__(self, order_id: Optional[int] = None):
         self.order_id = order_id
 
     # --------- CREATED
     def create_order(self, user: User):
-        order = Order.objects.create(user=user)
+        order = self.order_objects.create(user=user)
         self.order_id = order.id
         return order
 
     def _calculate_total_price(self, pk: int = None):
         total_price = 0
         if pk is not None:
-            items = OrderItem.objects.filter(order_id=self.order_id)
+            items = self.order_item_objects.filter(order_id=self.order_id)
         else:
-            items = OrderItem.objects.filter(order_id=pk)
+            items = self.order_item_objects.filter(order_id=pk)
         for item in items:
             total_price += item.product.price * item.quantity
         return total_price
+
+    def get_all_orders(self, user: User):
+        return self.order_objects.filter(user=user)
 
     @overload
     def get_order(self, pk: int = None) -> Order:
@@ -37,20 +44,23 @@ class OrderService:
         if pk:
             to_find = pk
         # to escape N+1 problem
-        return Order.objects.select_related("user").prefetch_related("items", "items__product").get(id=to_find)
+        return get_object_or_404(
+            self.order_objects.select_related("user").prefetch_related("items", "items__product"),
+            id=to_find
+        )
 
     @dispatch(int, int)
     def add_products(self, product_id: int, quantity: int = 1) -> None:
         if self.get_order().status != Order.Status.CREATED:
             raise ServiceException(CANNOT_ADD_PRODUCT)
-        OrderItem.objects.create(order_id=self.order_id, product_id=product_id, quantity=quantity)
+        self.order_item_objects.create(order_id=self.order_id, product_id=product_id, quantity=quantity)
         self._calculate_total_price()
 
     @dispatch(int, int, int)
     def add_products(self, pk: int, product_id: int, quantity: int = 1) -> None:
         if self.get_order(pk).status != Order.Status.CREATED:
             raise ServiceException(CANNOT_ADD_PRODUCT)
-        OrderItem.objects.create(order_id=pk, product_id=product_id, quantity=quantity)
+        self.order_item_objects.create(order_id=pk, product_id=product_id, quantity=quantity)
         self._calculate_total_price(pk)
 
     @dispatch(int, int)
@@ -58,7 +68,7 @@ class OrderService:
         if self.get_order().status != Order.Status.CREATED:
             raise ServiceException(CANNOT_REMOVE_PRODUCT)
 
-        items = OrderItem.objects.filter(order_id=self.order_id, product_id=product_id).first()
+        items = self.order_item_objects.filter(order_id=self.order_id, product_id=product_id).first()
         if items:
             if items.quantity <= quantity:
                 items.delete()
@@ -72,7 +82,7 @@ class OrderService:
         if self.get_order().status != Order.Status.CREATED:
             raise ServiceException(CANNOT_REMOVE_PRODUCT)
 
-        items = OrderItem.objects.filter(order_id=pk, product_id=product_id).first()
+        items = self.order_item_objects.filter(order_id=pk, product_id=product_id).first()
         if items:
             if items.quantity <= quantity:
                 items.delete()

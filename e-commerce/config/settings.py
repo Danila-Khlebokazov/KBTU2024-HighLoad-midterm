@@ -119,6 +119,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'apps.authentication.backends.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
 }
 
 # SPECTACULAR_SETTINGS
@@ -132,6 +135,10 @@ SPECTACULAR_SETTINGS = {
     "SERVERS": [{"url": SITE_URL}],
     "SWAGGER_UI_SETTINGS": {
         "displayRequestDuration": True,
+        "defaultModelsExpandDepth": -1,
+        "defaultModelExpandDepth": 4,
+        "filter": True,
+        "persistAuthorization": True
     },
 }
 

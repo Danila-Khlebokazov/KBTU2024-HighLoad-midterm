@@ -1,39 +1,69 @@
-from rest_framework import status, serializers
-from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from apps.core.serializers import create_order_out_serializer, SimpleOrderSerializer, FullOrderSerializer
 from apps.core.services import OrderService
-from rest_framework.decorators import api_view
-
-
-def create_serializer_class(name, fields):
-    return type(name, (serializers.Serializer,), fields)
-
-
-def inline_serializer(*, name="", fields, data=None, **kwargs):
-    serializer_class = create_serializer_class(name=name, fields=fields)
-
-    if data is not None:
-        return serializer_class(data=data, **kwargs)
-
-    return serializer_class(**kwargs)
-
-
-create_order_out_serializer = inline_serializer(name="CreateOrderOutSerializer", fields={
-    "order_id": serializers.IntegerField(),
-})
 
 
 @extend_schema(
-    tags=["order"],
-    request=None,
-    responses={"201": create_order_out_serializer},
+    tags=["orders"],
 )
-@api_view(["POST"])
-def create_order(request):
-    order_service = OrderService()
-    if request.user.is_authenticated:
+class OrdersView(APIView):
+    permission_classes = [IsAuthenticated]
+    get_serializer_class = SimpleOrderSerializer
+
+    @extend_schema(
+        request=None,
+        responses={status.HTTP_200_OK: get_serializer_class},
+    )
+    def get(self, request):
+        order_service = OrderService()
+        orders = order_service.get_all_orders(request.user)
+        serializer = self.get_serializer_class(orders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=None,
+        responses={"201": create_order_out_serializer},
+    )
+    def post(self, request):
+        order_service = OrderService()
         order_service.create_order(request.user)
         return Response({"order_id": order_service.order_id}, status=status.HTTP_201_CREATED)
-    else:
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+@extend_schema(
+    tags=["orders"],
+)
+class OrderDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    get_serializer_class = FullOrderSerializer
+
+    @extend_schema(
+        request=None,
+        responses={status.HTTP_200_OK: get_serializer_class},
+    )
+    def get(self, request, pk):
+        order_service = OrderService(pk)
+        order = order_service.get_order()
+        serializer = self.get_serializer_class(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["orders"],
+)
+class OrderCancelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=None,
+        responses={status.HTTP_204_NO_CONTENT: None},
+    )
+    def put(self, request, pk):
+        order_service = OrderService(pk)
+        order_service.cancel()
+        return Response(status=status.HTTP_204_NO_CONTENT)

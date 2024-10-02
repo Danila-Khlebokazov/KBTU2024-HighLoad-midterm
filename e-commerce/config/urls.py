@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/core/', include("apps.core.api.urls")),
     path('api/auth/', include('apps.authentication.urls', namespace='authentication')),
-    re_path(r'^__debug__/', include("debug_toolbar.urls")),  # removes without debug
-]
+] + debug_toolbar_urls()
 
 if settings.DEBUG:
     from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
