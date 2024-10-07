@@ -1,5 +1,6 @@
 import logging
 
+from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.views import exception_handler
 
@@ -7,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)

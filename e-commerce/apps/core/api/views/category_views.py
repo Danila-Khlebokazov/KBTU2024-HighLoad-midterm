@@ -9,9 +9,12 @@ from rest_framework.permissions import AllowAny
 
 
 @extend_schema(tags=["categories"], summary="Get all categories.")
-@method_decorator(cache_page(24 * 60 * 60))
 class CategoriesView(ListAPIView):
     queryset = Category.objects.all()
     permission_classes = (AllowAny,)
     pagination_class = LimitOffsetPagination
     serializer_class = CategorySerializer
+
+    @method_decorator(cache_page(60 * 60 * 2))
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
