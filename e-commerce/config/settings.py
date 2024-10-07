@@ -110,15 +110,10 @@ DATABASES = {
 # CACHE AND SESSION
 # -----------------------------------------------------------------------------
 CACHES = {
-    # "default": {
-    #     "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    #     "LOCATION": "unique"
-    # },
-    'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/var/tmp/django_session_cache',
-
-  },
+    "default": {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://redis:6379'
+    }
 }
 
 SESSION_CACHE_ALIAS = 'default'
@@ -159,8 +154,5 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-# DEBUG SETTINGS
-# -----------------------------------------------------------------------------
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda *_: True,
-}
+# NOTIFICATION CENTER SETTINGS
+NOTIFICATION_CENTER_RABBITMQ = env.str("NOTIFICATION_CENTER_RABBITMQ", "amqp://guest:guest@localhost:5672/")

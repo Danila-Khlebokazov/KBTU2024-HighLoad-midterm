@@ -34,10 +34,21 @@ services:
       - postgres-master
       - redis
 
+  celery_worker:
+    restart: always
+    container_name: "celery_worker"
+    build:
+      context: ./notification-center/
+      dockerfile: Dockerfile
+    environment:
+      - TZ=Asia/Almaty
+    depends_on:
+      - django
+
   postgres-master:
     restart: always
     container_name: "postgres-master"
-    image: postgres:latest
+    image: postgres:17.0-alpine3.20
     user: postgres
     environment:
       POSTGRES_USER: "postgres"
@@ -92,7 +103,7 @@ services:
   redis:
     restart: always
     container_name: "redis"
-    image: redis:latest
+    image: redis:7.4.0
     ports:
       - "6379:6379"
 #    healthcheck:
@@ -100,6 +111,17 @@ services:
 #      interval: 10s
 #      timeout: 10s
 #      retries: 20
+
+  rabbitmq:
+    restart: always
+    container_name: "rabbitmq"
+    image: rabbitmq:4.0.2-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
 
 #  grafana:
 #    container_name: "grafana"

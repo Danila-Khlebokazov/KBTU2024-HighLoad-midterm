@@ -15,7 +15,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'username', 'password', 'token']
+        fields = ['phone_number', 'username', 'password', 'token']
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
@@ -23,23 +23,23 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     """ Serialization of user login. """
-    email = serializers.CharField(max_length=255)
+    phone_number = serializers.CharField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
-        email = data.get('email', None)
+        phone_number = data.get('phone_number', None)
         password = data.get('password', None)
-        if email is None:
+        if phone_number is None:
             raise serializers.ValidationError(
-                'An email address is required to log in.'
+                'A phone number is required to log in.'
             )
         if password is None:
             raise serializers.ValidationError(
                 'A password is required to log in.'
             )
-        user = authenticate(username=email, password=password)
+        user = authenticate(username=phone_number, password=password)
         if user is None:
             raise serializers.ValidationError(
                 'A user with this email and password was not found.'
@@ -49,7 +49,7 @@ class LoginSerializer(serializers.Serializer):
                 'This user has been deactivated.'
             )
         return {
-            'email': user.email,
+            'phone_number': user.phone_number,
             'username': user.username,
             'token': user.token
         }
@@ -66,7 +66,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password', 'token',)
+        fields = ('phone_number', 'username', 'password', 'token',)
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)

@@ -19,12 +19,18 @@ from django.contrib import admin
 from django.urls import path, include
 from debug_toolbar.toolbar import debug_toolbar_urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.http import HttpResponse
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/core/', include("apps.core.api.urls")),
-    path('api/auth/', include('apps.authentication.urls', namespace='authentication')),
-] + debug_toolbar_urls() + staticfiles_urlpatterns()
+urlpatterns = (
+    [
+        path('admin/', admin.site.urls),
+        path('health-check/', lambda _: HttpResponse("OK")),
+        path('api/core/', include("apps.core.api.urls")),
+        path('api/auth/', include('apps.authentication.urls', namespace='authentication')),
+    ]
+    + staticfiles_urlpatterns()
+    + debug_toolbar_urls()
+)
 
 if settings.DEBUG:
     from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
