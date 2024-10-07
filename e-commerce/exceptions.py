@@ -14,9 +14,7 @@ class ServiceException(APIException):
 
 def core_exception_handler(exc, context):
     response = exception_handler(exc, context)
-    handlers = {
-        'ValidationError': _handle_generic_error
-    }
+    handlers = {"ValidationError": _handle_generic_error}
     exception_class = exc.__class__.__name__
 
     if exception_class in handlers:
@@ -26,8 +24,6 @@ def core_exception_handler(exc, context):
 
 
 def _handle_generic_error(exc, context, response):
-    response.data = {
-        'errors': response.data
-    }
+    response.data = {"errors": response.data}
 
     return response

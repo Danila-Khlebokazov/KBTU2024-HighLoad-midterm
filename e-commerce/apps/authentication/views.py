@@ -5,9 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer,
-)
+from .serializers import LoginSerializer, RegistrationSerializer, UserSerializer
 
 
 @extend_schema(tags=["auth"])
@@ -15,10 +13,13 @@ class RegistrationAPIView(APIView):
     """
     Register a new user.
     """
+
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
 
-    @extend_schema(request=serializer_class, responses=UserSerializer, summary="Register a new user.")
+    @extend_schema(
+        request=serializer_class, responses=UserSerializer, summary="Register a new user."
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -30,12 +31,15 @@ class RegistrationAPIView(APIView):
 @extend_schema(tags=["auth"])
 class LoginAPIView(APIView):
     """
-        Login an existing user.
+    Login an existing user.
     """
+
     permission_classes = (AllowAny,)
     serializer_class = LoginSerializer
 
-    @extend_schema(request=serializer_class, responses=UserSerializer, summary="Login an existing user.")
+    @extend_schema(
+        request=serializer_class, responses=UserSerializer, summary="Login an existing user."
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -48,6 +52,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     """
     Retrieve and update user information.
     """
+
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
@@ -59,9 +64,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
     @extend_schema(request=serializer_class, responses=UserSerializer)
     def update(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            request.user, data=request.data, partial=True
-        )
+        serializer = self.serializer_class(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 

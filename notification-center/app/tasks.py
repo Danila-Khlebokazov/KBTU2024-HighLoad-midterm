@@ -1,16 +1,15 @@
-from celery import Celery
-from .sms_senders import twilio
 import os
+
+from celery import Celery
 from dotenv import load_dotenv
+
+from .sms_senders import twilio
 
 load_dotenv()
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://rabbitmq:rabbitmq@localhost:5672//")
 
-celery_app = Celery(
-    "notification_center",
-    broker=CELERY_BROKER_URL
-)
+celery_app = Celery("notification_center", broker=CELERY_BROKER_URL)
 
 
 @celery_app.task(bind=True, name="send_notification_task")

@@ -14,26 +14,26 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from debug_toolbar.toolbar import debug_toolbar_urls
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
-from debug_toolbar.toolbar import debug_toolbar_urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
+from django.urls import include, path
 
 urlpatterns = (
     [
-        path('admin/', admin.site.urls),
-        path('health-check/', lambda _: HttpResponse("OK")),
-        path('api/core/', include("apps.core.api.urls")),
-        path('api/auth/', include('apps.authentication.urls', namespace='authentication')),
+        path("admin/", admin.site.urls),
+        path("health-check/", lambda _: HttpResponse("OK")),
+        path("api/core/", include("apps.core.api.urls")),
+        path("api/auth/", include("apps.authentication.urls", namespace="authentication")),
     ]
     + staticfiles_urlpatterns()
     + debug_toolbar_urls()
 )
 
 if settings.DEBUG:
-    from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
+    from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
     urlpatterns += [
         path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

@@ -1,6 +1,8 @@
+from typing import List
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, field_validator
-from typing import List
+
 from .tasks import send_notification_task
 
 app = FastAPI(title="Notification Center API")
@@ -11,13 +13,13 @@ class NotificationRequest(BaseModel):
     message: str = Field(..., example="Your verification code is 123456")
     sender: str = Field(..., example="twilio")  # e.g., twilio, nexmo
 
-    @field_validator('phone_numbers')
+    @field_validator("phone_numbers")
     def validate_phone_numbers(cls, v):
         if not v:
-            raise ValueError('At least one phone number must be provided')
+            raise ValueError("At least one phone number must be provided")
         for number in v:
-            if not number.startswith('+') or not number[1:].isdigit():
-                raise ValueError(f'Invalid phone number format: {number}')
+            if not number.startswith("+") or not number[1:].isdigit():
+                raise ValueError(f"Invalid phone number format: {number}")
         return v
 
 

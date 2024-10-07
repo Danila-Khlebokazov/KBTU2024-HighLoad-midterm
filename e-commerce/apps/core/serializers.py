@@ -1,6 +1,5 @@
+from apps.core.models import Category, Order, OrderItem, Product
 from rest_framework import serializers
-
-from apps.core.models import Order, Product, Category, OrderItem
 
 
 def create_serializer_class(name, fields):
@@ -16,9 +15,12 @@ def inline_serializer(*, name="", fields, data=None, **kwargs):
     return serializer_class(**kwargs)
 
 
-create_order_out_serializer = inline_serializer(name="CreateOrderOutSerializer", fields={
-    "order_id": serializers.IntegerField(),
-})
+create_order_out_serializer = inline_serializer(
+    name="CreateOrderOutSerializer",
+    fields={
+        "order_id": serializers.IntegerField(),
+    },
+)
 
 
 class SimpleOrderSerializer(serializers.ModelSerializer):

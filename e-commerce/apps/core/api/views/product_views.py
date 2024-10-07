@@ -1,3 +1,5 @@
+from apps.core.models import Product
+from apps.core.serializers import ProductSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from drf_spectacular.utils import extend_schema
@@ -5,14 +7,8 @@ from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny
 
-from apps.core.models import Product
-from apps.core.serializers import ProductSerializer
 
-
-@extend_schema(
-    tags=["products"],
-    summary="Get all products."
-)
+@extend_schema(tags=["products"], summary="Get all products.")
 @method_decorator(cache_page(24 * 60 * 60))
 class ProductsView(ListAPIView):
     queryset = Product.objects.all()

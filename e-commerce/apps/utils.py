@@ -1,8 +1,8 @@
 import hashlib
-
-from django.core.cache import cache
 from functools import wraps
 from typing import Optional
+
+from django.core.cache import cache
 
 
 def cache_decorator(cache_name: Optional[str] = None, timeout: int = 60):

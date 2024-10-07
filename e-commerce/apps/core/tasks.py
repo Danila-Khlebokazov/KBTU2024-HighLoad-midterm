@@ -1,5 +1,5 @@
-from config.celery import app as celery_app
 from apps.authentication.models import User
+from config.celery import app as celery_app
 
 
 def send_sms_to_user(user: User, message: str):
@@ -11,5 +11,5 @@ def send_sms_to_user(user: User, message: str):
                 "message": message,
             }
         },
-        queue="notification-center"
+        queue="notification-center",
     ).delay()

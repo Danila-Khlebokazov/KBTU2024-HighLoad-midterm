@@ -7,11 +7,11 @@ from .models import User
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
-    authentication_header_prefix = 'Bearer'
+    authentication_header_prefix = "Bearer"
 
     def authenticate(self, request):
         """
-            Authenticate the request and return a two-tuple of (user, token).
+        Authenticate the request and return a two-tuple of (user, token).
         """
         request.user = None
         auth_header = authentication.get_authorization_header(request).split()
@@ -25,8 +25,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
         elif len(auth_header) > 2:
             return None
-        prefix = auth_header[0].decode('utf-8')
-        token = auth_header[1].decode('utf-8')
+        prefix = auth_header[0].decode("utf-8")
+        token = auth_header[1].decode("utf-8")
 
         if prefix.lower() != auth_header_prefix:
             return None
@@ -35,19 +35,19 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
     def _authenticate_credentials(self, request, token):
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         except Exception:
-            msg = 'Cannot decode token'
+            msg = "Cannot decode token"
             raise exceptions.AuthenticationFailed(msg)
 
         try:
-            user = User.objects.get(pk=payload['id'])
+            user = User.objects.get(pk=payload["id"])
         except User.DoesNotExist:
-            msg = 'No user with token.'
+            msg = "No user with token."
             raise exceptions.AuthenticationFailed(msg)
 
         if not user.is_active:
-            msg = 'User is deactivated.'
+            msg = "User is deactivated."
             raise exceptions.AuthenticationFailed(msg)
 
         return user, token

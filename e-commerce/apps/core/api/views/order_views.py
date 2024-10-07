@@ -1,11 +1,14 @@
+from apps.core.serializers import (
+    FullOrderSerializer,
+    SimpleOrderSerializer,
+    create_order_out_serializer,
+)
+from apps.core.services import OrderService
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from apps.core.serializers import create_order_out_serializer, SimpleOrderSerializer, FullOrderSerializer
-from apps.core.services import OrderService
 
 
 @extend_schema(
@@ -18,7 +21,7 @@ class OrdersView(APIView):
     @extend_schema(
         request=None,
         responses={status.HTTP_200_OK: get_serializer_class},
-        summary="Get all user orders."
+        summary="Get all user orders.",
     )
     def get(self, request):
         order_service = OrderService()
@@ -27,9 +30,7 @@ class OrdersView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
-        request=None,
-        responses={"201": create_order_out_serializer},
-        summary="Create a new order."
+        request=None, responses={"201": create_order_out_serializer}, summary="Create a new order."
     )
     def post(self, request):
         order_service = OrderService()
@@ -48,7 +49,7 @@ class OrderDetailView(APIView):
         request=None,
         responses={status.HTTP_200_OK: get_serializer_class},
         summary="Get order details.",
-        operation_id="api_core_orders_details_retrieve"
+        operation_id="api_core_orders_details_retrieve",
     )
     def get(self, request, pk):
         order_service = OrderService(pk)
@@ -57,10 +58,7 @@ class OrderDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@extend_schema(
-    tags=["orders"],
-    summary="Cancel an order."
-)
+@extend_schema(tags=["orders"], summary="Cancel an order.")
 class OrderCancelView(APIView):
     permission_classes = [IsAuthenticated]
 

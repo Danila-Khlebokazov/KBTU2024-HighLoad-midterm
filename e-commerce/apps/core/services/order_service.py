@@ -1,12 +1,11 @@
-from typing import Optional, overload, Callable, Union, List
+from typing import Callable, List, Optional, Union, overload
 
-from django.contrib.auth.models import User
-from multipledispatch import dispatch
-from django.shortcuts import get_object_or_404
-
-from constants import CANNOT_ADD_PRODUCT, CANNOT_REMOVE_PRODUCT, WRONG_SEQUENCE, EMPTY_ORDER
 from apps.core.models import Order, OrderItem
+from constants import CANNOT_ADD_PRODUCT, CANNOT_REMOVE_PRODUCT, EMPTY_ORDER, WRONG_SEQUENCE
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from exceptions import ServiceException
+from multipledispatch import dispatch
 
 
 class OrderService:
@@ -46,14 +45,16 @@ class OrderService:
         # to escape N+1 problem
         return get_object_or_404(
             self.order_objects.select_related("user").prefetch_related("items", "items__product"),
-            id=to_find
+            id=to_find,
         )
 
     @dispatch(int, int)
     def add_products(self, product_id: int, quantity: int = 1) -> None:
         if self.get_order().status != Order.Status.CREATED:
             raise ServiceException(CANNOT_ADD_PRODUCT)
-        self.order_item_objects.create(order_id=self.order_id, product_id=product_id, quantity=quantity)
+        self.order_item_objects.create(
+            order_id=self.order_id, product_id=product_id, quantity=quantity
+        )
         self._calculate_total_price()
 
     @dispatch(int, int, int)
@@ -68,7 +69,9 @@ class OrderService:
         if self.get_order().status != Order.Status.CREATED:
             raise ServiceException(CANNOT_REMOVE_PRODUCT)
 
-        items = self.order_item_objects.filter(order_id=self.order_id, product_id=product_id).first()
+        items = self.order_item_objects.filter(
+            order_id=self.order_id, product_id=product_id
+        ).first()
         if items:
             if items.quantity <= quantity:
                 items.delete()
@@ -123,10 +126,7 @@ class OrderService:
                 raise ServiceException(EMPTY_ORDER)
 
         self._change_status(
-            Order.Status.CREATED,
-            Order.Status.PAID,
-            pk,
-            exec_after_validation=paying_validation
+            Order.Status.CREATED, Order.Status.PAID, pk, exec_after_validation=paying_validation
         )
 
     # ------------- SHIPPED
