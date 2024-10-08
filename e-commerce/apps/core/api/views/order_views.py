@@ -33,9 +33,9 @@ class OrdersView(APIView):
         request=None, responses={"201": create_order_out_serializer}, summary="Create a new order."
     )
     def post(self, request):
-        order_service = OrderService()
+        order_service: OrderService = OrderService()
         order_service.create_order(request.user)
-        return Response({"order_id": order_service.order_id}, status=status.HTTP_201_CREATED)
+        return Response({"order_id": order_service.order.id}, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(
