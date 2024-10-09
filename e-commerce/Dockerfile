@@ -34,7 +34,7 @@ RUN mkdir -p /app/var/static
 
 RUN chown -R appuser:appuser /app
 
-USER appuser
+#USER appuser
 
 COPY . .
 

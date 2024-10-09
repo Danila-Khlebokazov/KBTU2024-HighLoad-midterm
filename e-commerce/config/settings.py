@@ -14,7 +14,7 @@ DEBUG = env.bool("DEBUG", False)
 SECRET_KEY = env.str("SECRET_KEY", "secret")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
-CSRF_TRUSTED_ORIGINS = ["http://localhost"]
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["*"])
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", False)
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -102,8 +102,18 @@ DATABASES = {
         "PORT": env.str("POSTGRES_PORT", "5432"),
         "USER": env.str("POSTGRES_USER"),
         "PASSWORD": env.str("POSTGRES_PASSWORD"),
-    }
+    },
+    "readonly": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": env.str("POSTGRES_DB", "midka"),
+        "HOST": env.str("POSTGRES_HOST_2", "localhost"),
+        "PORT": env.str("POSTGRES_PORT", "5432"),
+        "USER": env.str("POSTGRES_USER"),
+        "PASSWORD": env.str("POSTGRES_PASSWORD"),
+    },
 }
+
+DATABASE_ROUTERS = ['config.db_utils.CustomDatabaseRouter']
 
 # CACHE AND SESSION
 # -----------------------------------------------------------------------------

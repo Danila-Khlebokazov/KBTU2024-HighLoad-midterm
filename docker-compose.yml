@@ -8,7 +8,6 @@ x-def-logging: &default-logging
       loki-max-backoff: 1000ms
       loki-timeout: 1s
 
-
 services:
   nginx:
     restart: always
@@ -21,7 +20,9 @@ services:
     volumes:
       - ./nginx/nginx.local.conf:/etc/nginx/conf.d/default.conf
       - static-volume:/app/var/static
-#    <<: *default-logging
+    <<: *default-logging
+    networks:
+      - midka-net
 
   django: &django
     container_name: django-1
@@ -48,6 +49,9 @@ services:
         limits:
           cpus: '1'
           memory: 100M
+    networks:
+      - midka-net
+
   django-2:
     container_name: django-2
     <<: *django
@@ -66,8 +70,13 @@ services:
       - TZ=Asia/Almaty
     depends_on:
       - django
-#    <<: *default-logging
+    <<: *default-logging
+    networks:
+      - midka-net
 
+
+  # to configure master
+  # createuser --replication -P repluser
   postgres-master:
     restart: always
     container_name: "postgres-master"
@@ -78,73 +87,53 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "midka"
       TZ: "Almaty/Asia"
-#      <<: *default-logging
-    ports:
-      - "5432:5432"
+    <<: *default-logging
+    networks:
+      - midka-net
     volumes:
       - postgres-master-data:/var/lib/postgresql/data
-  #      - ./postgresql/master/postgres.conf:/etc/postgresql/postgresql.conf
-  #    command: >
-  #      bash -c "
-  #        echo 'host replication postgres 192.168.224.4/32 md5' >> /var/lib/postgresql/data/pg_hba.conf;
-  #        postgres -c config_file=/etc/postgresql/postgresql.conf
-  #      "
-  #    healthcheck:
-  #      test: [ "CMD", "curl", "-f", "http://localhost" ]
-  #      interval: 10s
-  #      timeout: 10s
-  #      retries: 20
+      - ./postgresql/master/postgres.conf:/var/lib/postgresql/data/postgres.conf
+      - ./postgresql/master/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
 
-  #  postgres-slave:
-  #    restart: always
-  #    image: postgres:latest
-  #    user: postgres
-  #    environment:
-  #      POSTGRES_USER: "postgres"
-  #      POSTGRES_PASSWORD: "postgres"
-  #      TZ: "Almaty/Asia"
-  #    volumes:
-  #      - postgres-slave-data:/var/lib/postgresql/data
-  #      - ./postgresql/slave/postgres.conf:/etc/postgresql/postgresql.conf
-  #    depends_on:
-  #      - postgres-master
-  #    ports:
-  #      - "5433:5432"
-  #    command: >
-  #      bash -c "
-  #        until pg_isready --host=postgres-master --port=5432; do
-  #          echo 'Waiting for master to start...'
-  #          sleep 1;
-  #        done;
-  #        rm -rf /var/lib/postgresql/data/*;
-  #        pg_basebackup -h postgres-master -D /var/lib/postgresql/data -U postgres -vP -W;
-  #        chmod -R 0700 /var/lib/postgresql/data;
-  #        echo 'host replication all all trust' >> /var/lib/postgresql/data/pg_hba.conf;
-  #        postgres -c config_file=/etc/postgresql/postgresql.conf;
-  #      "
+  # to configure slave
+  # rm -r ~/data/*¬
+  # pg_basebackup --host=postgresql_01 --username=repluser --pgdata=/var/lib/postgresql/data --wal-method=stream --write-recovery-conf
+  postgres-slave:
+    container_name: "postgres-slave"
+    restart: always
+    image: postgres:17.0-alpine3.20
+    user: postgres
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      TZ: "Almaty/Asia"
+    volumes:
+      - postgres-slave-data:/var/lib/postgresql/data
+      - ./postgresql/slave/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+    <<: *default-logging
+    networks:
+      - midka-net
 
   redis:
     restart: always
     container_name: "redis"
     image: redis:7.4.0
-    ports:
-      - "6379:6379"
-  #    healthcheck:
-  #      test: [ "CMD", "curl", "-f", "http://localhost" ]
-  #      interval: 10s
-  #      timeout: 10s
-  #      retries: 20
+    <<: *default-logging
+    networks:
+      - midka-net
 
   rabbitmq:
     restart: always
     container_name: "rabbitmq"
     image: rabbitmq:4.0.2-management
+    <<: *default-logging
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "15672:15672" # front
     environment:
       RABBITMQ_DEFAULT_USER: "rabbitmq"
       RABBITMQ_DEFAULT_PASS: "rabbitmq"
+    networks:
+      - midka-net
 
   grafana:
     container_name: "grafana"
@@ -162,6 +151,8 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - TZ=Asia/Almaty
+    networks:
+      - midka-net
 
   loki:
     hostname: loki
@@ -173,9 +164,15 @@ services:
     command: -config.file=/etc/loki/retention-config.yaml
     volumes:
       - ./loki/config.yaml:/etc/loki/retention-config.yaml
+    networks:
+      - midka-net
 
 volumes:
   postgres-master-data:
   static-volume:
-#  postgres-slave-data:
+  postgres-slave-data:
   grafana-data:
+
+networks:
+  midka-net:
+    external: true
