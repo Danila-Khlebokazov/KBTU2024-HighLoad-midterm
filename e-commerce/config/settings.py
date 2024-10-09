@@ -151,6 +151,13 @@ SPECTACULAR_SETTINGS = {
 }
 
 # NOTIFICATION CENTER SETTINGS
+# -----------------------------------------------------------------------------
 NOTIFICATION_CENTER_RABBITMQ = env.str(
     "NOTIFICATION_CENTER_RABBITMQ", "amqp://guest:guest@localhost:5672/"
 )
+
+# DEBUG TOOLBAR SETTINGS
+# -----------------------------------------------------------------------------
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda _: True,
+}
